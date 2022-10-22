@@ -3,6 +3,8 @@
    https://howtomechatronics.com/tutorials/arduino/arduino-color-sensing-tutorial-tcs230-tcs3200-color-sensor/
    https://dronebotworkshop.com/arduino-color-sense/
 */
+#include <WS2812B.h>  // WS2812B โค้ดอ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
+#define NUM_LEDS 50
 
 #define S0 PB3
 #define S1 PB4
@@ -10,7 +12,11 @@
 #define S3 PB6
 #define sensorOut PB7
 
+WS2812B strip = WS2812B(NUM_LEDS);
+
 void setup() {
+  Serial.begin(115200);
+
   pinMode(S0, OUTPUT);
   pinMode(S1, OUTPUT);
   pinMode(S2, OUTPUT);
@@ -21,13 +27,17 @@ void setup() {
   digitalWrite(S0, HIGH);
   digitalWrite(S1, LOW);
 
-  Serial.begin(115200);
+  strip.begin();// Sets up the SPI
+  strip.show();// Clears the strip, as by default the strip data is set to all LED's off.
+//   strip.setBrightness(8);
 }
 
 void loop() {
   int red = getRed();
   int green = getGreen();
   int blue = getBlue();
+
+  colorWipe(strip.Color(red, green, blue), 20); // Green
 
   Serial.print("Red:"); Serial.print(red);
   Serial.print("  Green:"); Serial.print(green);
@@ -43,15 +53,10 @@ int getRed() {
   // Reading the output frequency
   frequency = pulseIn(sensorOut, LOW);
   //Remaping the value of the frequency to the RGB Model of 0 to 255
-  frequency = map(frequency, 20, 360, 255, 0);
+  frequency = map(frequency, 20, 340, 255, 0);
 
   if (frequency > 255) frequency = 255;
   else if (frequency < 0) frequency = 0;
-
-  // Printing the value on the serial monitor
-  //  Serial.print("R= ");//printing name
-  //  Serial.print(frequency);//printing RED color frequency
-  //  Serial.print("  ");
 
   return frequency;
 }
@@ -69,11 +74,6 @@ int getGreen() {
   if (frequency > 255) frequency = 255;
   else if (frequency < 0) frequency = 0;
 
-  // Printing the value on the serial monitor
-  //  Serial.print("G= ");//printing name
-  //  Serial.print(frequency);//printing RED color frequency
-  //  Serial.print("  ");
-
   return frequency;
 }
 
@@ -85,15 +85,20 @@ int getBlue() {
   // Reading the output frequency
   frequency = pulseIn(sensorOut, LOW);
   //Remaping the value of the frequency to the RGB Model of 0 to 255
-  frequency = map(frequency, 15, 240, 255, 0);
+  frequency = map(frequency, 15, 230, 255, 0);
 
   if (frequency > 255) frequency = 255;
   else if (frequency < 0) frequency = 0;
 
-  // Printing the value on the serial monitor
-  //  Serial.print("B= ");//printing name
-  //  Serial.print(frequency);//printing RED color frequency
-  //  Serial.println("  ");
-
   return frequency;
+}
+
+void colorWipe(uint32_t c, uint8_t wait)
+{
+  for (uint16_t i = 0; i < strip.numPixels(); i++)
+  {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
+  }
 }
