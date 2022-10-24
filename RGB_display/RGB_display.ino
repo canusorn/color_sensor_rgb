@@ -4,7 +4,7 @@
    https://dronebotworkshop.com/arduino-color-sense/
 */
 #include <WS2812B.h>  // WS2812B โค้ดอ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
-#define NUM_LEDS 50
+#define NUM_LEDS 16
 
 #define S0 PB3
 #define S1 PB4
@@ -12,7 +12,9 @@
 #define S3 PB6
 #define sensorOut PB7
 
-WS2812B strip = WS2812B(NUM_LEDS);
+#define LDR PA5
+
+WS2812B strip = WS2812B(NUM_LEDS);   // ต่อกับขา MOSI PA7
 
 void setup() {
   Serial.begin(115200);
@@ -29,17 +31,32 @@ void setup() {
 
   strip.begin();// Sets up the SPI
   strip.show();// Clears the strip, as by default the strip data is set to all LED's off.
-//   strip.setBrightness(8);
+  //  strip.setBrightness(4);
+
+  // ไฟเลี้ยงให้ LDR
+  pinMode(PA4, OUTPUT);
+  pinMode(PA3, OUTPUT);
+  digitalWrite(PA4, LOW);
+  digitalWrite(PA3, HIGH);
+
 }
 
 void loop() {
+
+  // อ่านค่าสีจากเซนเซอร์สี
   int red = getRed();
   int green = getGreen();
   int blue = getBlue();
 
+  // อ่านค่าความเข้มแสงจาก LDR
+  int light = analogRead(LDR);
+
+  // แสดงสี RGB  อ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
   colorWipe(strip.Color(red, green, blue), 20); // Green
 
-  Serial.print("Red:"); Serial.print(red);
+  // แสดงค่า
+  Serial.print("Light:"); Serial.print(light);
+  Serial.print("  Red:"); Serial.print(red);
   Serial.print("  Green:"); Serial.print(green);
   Serial.print("  Blue:"); Serial.println(blue);
 
