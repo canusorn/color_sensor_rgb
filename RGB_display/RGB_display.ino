@@ -6,14 +6,17 @@
 #include <WS2812B.h>  // WS2812B โค้ดอ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
 #define NUM_LEDS 16
 
+// พินสำหรับเซนเซอร์สี RGB Colour Sensor (TCS230/TCS3200)
 #define S0 PB3
 #define S1 PB4
 #define S2 PB5
 #define S3 PB6
 #define sensorOut PB7
 
+// พินสำหรับเซนเซอร์แสง LDR
 #define LDR PA5
 
+// หลอดไฟ rgb
 WS2812B strip = WS2812B(NUM_LEDS);   // ต่อกับขา MOSI PA7
 
 void setup() {
@@ -25,36 +28,31 @@ void setup() {
   pinMode(S3, OUTPUT);
   pinMode(sensorOut, INPUT);
 
-  // Setting frequency-scaling to 2%
+  // ตั้งค่าเซนเซอร์สี RGB Setting frequency-scaling to 2%
   digitalWrite(S0, HIGH);
   digitalWrite(S1, LOW);
 
+// เริ่มทำงานหลอดไฟ RGB
   strip.begin();// Sets up the SPI
   strip.show();// Clears the strip, as by default the strip data is set to all LED's off.
   //  strip.setBrightness(4);
-
-  // ไฟเลี้ยงให้ LDR
-  pinMode(PA4, OUTPUT);
-  pinMode(PA3, OUTPUT);
-  digitalWrite(PA4, LOW);
-  digitalWrite(PA3, HIGH);
 
 }
 
 void loop() {
 
-  // อ่านค่าสีจากเซนเซอร์สี
+  // อ่านค่าสีจากเซนเซอร์สี เป็น digital sensor
   int red = getRed();
   int green = getGreen();
   int blue = getBlue();
 
-  // อ่านค่าความเข้มแสงจาก LDR
+  // อ่านค่าความเข้มแสงจาก LDR เป็น analog sensor มีค่าตั้งแต่ 0-4095
   int light = analogRead(LDR);
 
-  // แสดงสี RGB  อ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
+  // แสดงสีที่หลอดไฟ RGB  อ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
   colorWipe(strip.Color(red, green, blue), 20); // Green
 
-  // แสดงค่า
+  // แสดงค่าจากเซนเซอร์
   Serial.print("Light:"); Serial.print(light);
   Serial.print("  Red:"); Serial.print(red);
   Serial.print("  Green:"); Serial.print(green);
@@ -63,6 +61,8 @@ void loop() {
   delay(500);
 }
 
+
+// อ้างอิงจากตัวอย่าง
 int getRed() {
   int frequency;
   digitalWrite(S2, LOW);
@@ -110,6 +110,7 @@ int getBlue() {
   return frequency;
 }
 
+// อ้างอิงจาก WS2812B > WS2812B_test
 void colorWipe(uint32_t c, uint8_t wait)
 {
   for (uint16_t i = 0; i < strip.numPixels(); i++)
