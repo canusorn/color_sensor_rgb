@@ -1,37 +1,10 @@
-/*
-   Copyright (c) 2015, Majenko Technologies
-   All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without modification,
-   are permitted provided that the following conditions are met:
-
- * * Redistributions of source code must retain the above copyright notice, this
-     list of conditions and the following disclaimer.
-
- * * Redistributions in binary form must reproduce the above copyright notice, this
-     list of conditions and the following disclaimer in the documentation and/or
-     other materials provided with the distribution.
-
- * * Neither the name of Majenko Technologies nor the names of its
-     contributors may be used to endorse or promote products derived from
-     this software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-   ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-   ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <SoftwareSerial.h>
+
+SoftwareSerial stmSerial(D4, D3); // RX, TX
 
 #ifndef STASSID
 #define STASSID "G6PD_2.4G"
@@ -41,12 +14,11 @@
 const char *ssid = STASSID;
 const char *password = STAPSK;
 
+int light, red, green, blue;
 ESP8266WebServer server(80);
 
 void handleRoot() {
-
-  html(0);
-
+  html();
 }
 
 void handleNotFound() {
@@ -69,7 +41,10 @@ void handleNotFound() {
 void setup(void) {
   pinMode(D4, OUTPUT);
   digitalWrite(D4, HIGH);
+
   Serial.begin(115200);
+  stmSerial.begin(9600);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("");
@@ -93,11 +68,11 @@ void setup(void) {
   server.on("/", handleRoot);
   server.on("/on", []() {
     digitalWrite(D4, 1);
-    html(1);
+    html();
   });
   server.on("/off", []() {
     digitalWrite(D4, 0);
-    html(0);
+    html();
   });
   server.onNotFound(handleNotFound);
   server.begin();
@@ -107,32 +82,49 @@ void setup(void) {
 void loop(void) {
   server.handleClient();
   MDNS.update();
+
+  // if there's any serial available, read it:
+  while (stmSerial.available() > 0) {
+
+    light = stmSerial.parseInt();
+    red = stmSerial.parseInt();
+    green = stmSerial.parseInt();
+    blue = stmSerial.parseInt();
+
+    if (stmSerial.read() == '\n') {
+      Serial.print("Light : ");
+      Serial.print(light, DEC);
+      Serial.print(" RGB : ");
+      Serial.print(red, DEC);
+      Serial.print(" ");
+      Serial.print(green, DEC);
+      Serial.print(" ");
+      Serial.println(blue, DEC);
+    }
+  }
 }
 
-void html(int state) {
+void html() {
   String temp;
-  int sensor = random(20, 30);
-  String buttonState;
 
-  if (state) {
-    buttonState = "<p><a href=\"/off\"><button class=\"button\">OFF</button></a></p>";
-  } else {
-    buttonState = "<p><a href=\"/on\"><button class=\"button\">ON</button></a></p>";
-  }
-  
-temp = "<html>\
+  temp = "<html>\
   <head>\
-    <meta http-equiv='refresh' content='5'/>\
-    <title>ESP8266 Light control</title>\
+    <meta http-equiv='refresh' content='10'/>\
+    <title>ESP8266 Color control</title>\
     <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; text-align: center; }\
       .button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;}\
+      .fa-lightbulb {color: rgb(" + String(red) + ", " + String(green) + ", " + String(blue) + ");}\
     </style>\
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css'/>\
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js'></script>\
   </head>\
   <body>\
-    <h1>Hello from ESP8266!</h1>\
-    <p>Sensor value : " + String(sensor) + "</p>"
-    + buttonState +"</body>\
+    <h1>Color control</h1>\
+    <p>Light value : " + String(light) + "</p>\
+    <p>RGB value : (" + String(red) + ", " + String(green) + ", "+ String(blue) + ")</p>\
+    <p><i class='fa-solid fa-lightbulb fa-10x'></i></p>\
+  </body>\
 </html>";
 
   server.send(200, "text/html", temp);
