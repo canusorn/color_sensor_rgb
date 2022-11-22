@@ -1,3 +1,5 @@
+// https://iotkiddie.com/blog/esp8266-webserver/
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -86,6 +88,7 @@ void loop(void) {
   // if there's any serial available, read it:
   while (stmSerial.available() > 0) {
 
+// รับค่า
     light = stmSerial.parseInt();
     red = stmSerial.parseInt();
     green = stmSerial.parseInt();

@@ -43,15 +43,16 @@ void setup() {
 void loop() {
 
   // อ่านค่าสีจากเซนเซอร์สี เป็น digital sensor
-  int red = getRed();
-  int green = getGreen();
-  int blue = getBlue();
+  // เซนเซอร์สี RGB Colour Sensor (TCS230/TCS3200)
+  int red = getRed();     // อ่านค่าสีแดง
+  int green = getGreen(); // อ่านค่าสีเขียว
+  int blue = getBlue();   // อ่านค่าสีฟ้า
 
   // อ่านค่าความเข้มแสงจาก LDR เป็น analog sensor มีค่าตั้งแต่ 0-4095
   int light = analogRead(LDR);
 
   // แสดงสีที่หลอดไฟ RGB  อ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
-  colorWipe(strip.Color(red, green, blue), 20); // Green
+  colorWipe(strip.Color(red, green, blue), 20); // แสดงสีที่ต้องการ
 
   // แสดงค่าจากเซนเซอร์
   Serial.print("Light:"); Serial.print(light);
@@ -60,7 +61,8 @@ void loop() {
   Serial.print("  Blue:"); Serial.print(blue);
   Serial.print("\n");
 
-  // ส่งค่าไปยัง ESP
+  // อ้างอิงตัวอย่าง https://iotkiddie.com/blog/serial-uart-esp-stm/
+  // ส่งค่าไปยัง ESP โดยใช้ UART2
   Serial2.print("Light:"); Serial2.print(light);
   Serial2.print("  Red:"); Serial2.print(red);
   Serial2.print("  Green:"); Serial2.print(green);
