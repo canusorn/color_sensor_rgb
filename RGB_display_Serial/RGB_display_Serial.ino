@@ -2,7 +2,26 @@
    Credit
    https://howtomechatronics.com/tutorials/arduino/arduino-color-sensing-tutorial-tcs230-tcs3200-color-sensor/
    https://dronebotworkshop.com/arduino-color-sense/
+
+  เซนเซอร์สี RGB Colour Sensor (TCS230/TCS3200) เป็นดิจิตอล
+   S0 PB3
+   S1 PB4
+   S2 PB5
+   S3 PB6
+   sensorOut PB7
+
+  INPUT เซนเซอร์แสง LDR เป้นอนาลอก
+   PA5
+
+  INPUT การต่อระหว่างบอร์ด esp กับ stm
+   PA3 > D3
+   PA2 > D4
+   GND > GND
+
+  OUTPUT ไฟ led rgb ใช้ชิป WS2812B
+   ต่อกับ MOSI ที่ PA7
 */
+
 #include <WS2812B.h>  // WS2812B โค้ดอ้างอิงจากตัวอย่าง WS2812B > WS2812B_test
 #define NUM_LEDS 16
 
