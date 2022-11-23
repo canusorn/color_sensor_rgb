@@ -23,8 +23,8 @@ SoftwareSerial stmSerial(D4, D3); // RX, TX
 
 // ตั้งค่า wifi ที่ต้องการเชื่อมต่อ
 #ifndef STASSID
-#define STASSID "G6PD_2.4G"
-#define STAPSK "570610193"
+#define STASSID "ชื่อไวไฟ"
+#define STAPSK "รหัสไวไฟ"
 #endif
 
 const char *ssid = STASSID;
