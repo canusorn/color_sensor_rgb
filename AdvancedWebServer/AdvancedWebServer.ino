@@ -2,6 +2,14 @@
 โค้ดต้นฉบับจาก Example > ESP8266WebServer > AdvancedWebServer
 อ้างอิงโค้ด Web Server https://iotkiddie.com/blog/esp8266-webserver/
 อ้างอิงโค้ด Serail STM->ESP https://iotkiddie.com/blog/serial-uart-esp-stm/
+
+การต่อระหว่างบอร์ด esp กับ stm
+PA3 > D3
+PA2 > D4
+GND > GND
+
+การอัพโหลดบอร์ด esp8266
+https://medium.com/@pechpijitthapudom/%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B8%95%E0%B8%B1%E0%B9%89%E0%B8%87-esp8266-arduino-core-%E0%B9%80%E0%B8%9E%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%87%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B1%E0%B8%9A-arduino-ide-7ad468e969e6
 */
 
 #include <ESP8266WiFi.h>
@@ -31,7 +39,32 @@ ESP8266WebServer server(80);
 // ส่งค่า HTML หน้าเว็บกลับไปยัง Web Browser
 void handleRoot()
 {
-  html();
+
+  String payload; // สร้างตัวแปรสตริงเก็บโค้ด html
+
+  // กำหนดค่า html และรวมกับค่าจากเซนเซอร์ โดยให้รีเฟรชอัตโนมัติทุก 10 วินาที  กำหนดเวลาที meta http-equiv='refresh' content='10'
+  payload = "<html>\
+  <head>\
+    <meta http-equiv='refresh' content='10'/>\ 
+    <title>ESP8266 Color control</title>\
+    <style>\
+      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; text-align: center; }\
+      .button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;}\
+      .fa-lightbulb {color: rgb(" + String(red) + ", " + String(green) + ", " + String(blue) + ");}\
+    </style>\
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css'/>\
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js'></script>\
+  </head>\
+  <body>\
+    <h1>Color control</h1>\
+    <p>Light value : " + String(light) + "</p>\
+    <p>RGB value : (" + String(red) + ", " + String(green) + ", " + String(blue) + ")</p>\
+    <p><i class='fa-solid fa-lightbulb fa-10x'></i></p>\
+  </body>\
+</html>";
+
+  // ส่งค่าตัวแปร  payload กับไปยัง  Web Browser
+  server.send(200, "text/html", payload);
 }
 
 // ส่งค่า HTML หน้าเว็บกลับไปยัง Web Browser กรณีไม่มี url ที่เรียกหา
@@ -107,7 +140,7 @@ void loop(void)
     green = stmSerial.parseInt();
     blue = stmSerial.parseInt();
 
-// ถ้าจบบรรทัดแล้ว(ตัว \n คือจบบรรทัด) ให้แสดงค่าที่ได้รับผ่าน Serial monitor
+    // ถ้าจบบรรทัดแล้ว(ตัว \n คือจบบรรทัด) ให้แสดงค่าที่ได้รับผ่าน Serial monitor
     if (stmSerial.read() == '\n')
     {
       Serial.print("Light : ");
@@ -120,33 +153,4 @@ void loop(void)
       Serial.println(blue);
     }
   }
-}
-
-// สร้างโค้ด html สำหรับแสดงหน้าเว็บ เพื่อส่งกลับไป Web browser
-void html()
-{
-  String payload;   // สร้างตัวแปรสตริงเก็บโค้ด html
-
-// กำหนดค่า html และรวมกับค่าจากเซนเซอร์ โดยให้รีเฟรชอัตโนมัติทุก 10 วินาที  กำหนดเวลาที meta http-equiv='refresh' content='10'
-  payload = "<html>\
-  <head>\
-    <meta http-equiv='refresh' content='10'/>\ 
-    <title>ESP8266 Color control</title>\
-    <style>\
-      body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; text-align: center; }\
-      .button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;}\
-      .fa-lightbulb {color: rgb(" + String(red) + ", " + String(green) + ", " + String(blue) + ");}\
-    </style>\
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css'/>\
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js'></script>\
-  </head>\
-  <body>\
-    <h1>Color control</h1>\
-    <p>Light value : " + String(light) + "</p>\
-    <p>RGB value : (" +String(red) + ", " + String(green) + ", " + String(blue) + ")</p>\
-    <p><i class='fa-solid fa-lightbulb fa-10x'></i></p>\
-  </body>\
-</html>";
-
-  server.send(200, "text/html", payload);
 }
